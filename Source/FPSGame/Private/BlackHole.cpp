@@ -30,7 +30,7 @@ ABlackHole::ABlackHole()
 // Called when the game starts or when spawned
 void ABlackHole::BeginPlay()
 {
-	Super::BeginPlay();	
+	Super::BeginPlay();
 }
 
 // Called every frame
@@ -44,39 +44,18 @@ void ABlackHole::Tick(float DeltaTime)
 	{
 		if (OverlappedComponent->GetOwner() != this)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Found and destroyed: %s"), *OverlappedComponent->GetName());
-			//UE_LOG(LogTemp, Warning, TEXT("Components owner: %s"), *OverlappedComponent->GetOwner()->GetName());
-			//UE_LOG(LogTemp, Warning, TEXT("This owner: %s"), *this->GetOwner()->GetName());
 			OverlappedComponent->DestroyComponent(true);			
 		}
-	}	
-
+	}
 	// Просмотр обьектов, которые пересекаются с внешей сферой и должны притягиваться черной дырой
 	OuterSphere->GetOverlappingComponents(OverlappingComponents);
 	for (auto& OverlappedComponent : OverlappingComponents)
 	{
 		if (OverlappedComponent->GetOwner() != this)
 		{
-			OverlappedComponent->AddRadialForce(this->GetActorLocation(), 1800, -10000.0f, ERadialImpulseFalloff::RIF_Constant, true);
-			UE_LOG(LogTemp, Warning, TEXT("Found and attracted: %s"), *OverlappedComponent->GetName());
+			OverlappedComponent->AddRadialForce(this->GetActorLocation(), OuterSphere->GetScaledSphereRadius(), -15000.0f, ERadialImpulseFalloff::RIF_Constant, true);
 		}
 	}
 }
 
-void ABlackHole::NotifyActorBeginOverlap(AActor* OtherActor)
-{
-	/*Super::NotifyActorBeginOverlap(OtherActor);
-	UE_LOG(LogTemp, Warning, TEXT("Overlap"));
-	//PlayEffects();
-	AActor* ActorToOverlap = Cast<AActor>(OtherActor);
-	if (ActorToOverlap)
-	{
-		// Если касается Актор, то он уничтожается
-		ActorToOverlap->Destroy();
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("No cast for: %s"), *OtherActor->GetName());
-	}*/
-}
 
