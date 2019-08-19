@@ -51,11 +51,18 @@ void ABlackHole::Tick(float DeltaTime)
 	OuterSphere->GetOverlappingComponents(OverlappingComponents);
 	for (auto& OverlappedComponent : OverlappingComponents)
 	{
-		if (OverlappedComponent->GetOwner() != this)
+		//
+		if (OverlappedComponent->GetOwner() != this 
+			&& OverlappedComponent->IsSimulatingPhysics())
 		{
 			OverlappedComponent->AddRadialForce(this->GetActorLocation(), OuterSphere->GetScaledSphereRadius(), -15000.0f, ERadialImpulseFalloff::RIF_Constant, true);
 		}
 	}
+}
+
+void ABlackHole::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+
 }
 
 
