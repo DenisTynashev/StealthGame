@@ -11,29 +11,22 @@
 AFPSLaunchPad::AFPSLaunchPad()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-	PadComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PadComp"));
-	PadComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);	
-	//OverlapComp->SetBoxExtent(FVector(100.0f));
-	SetRootComponent(PadComp);
+	PrimaryActorTick.bCanEverTick = true;	
 	
 	OverlapComp = CreateDefaultSubobject<UBoxComponent>(TEXT("OverlapComp"));
 	OverlapComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	OverlapComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
-	OverlapComp->SetBoxExtent(FVector(100.0f));
-	OverlapComp->SetHiddenInGame(false);
+	OverlapComp->SetBoxExtent(FVector(75.0f, 75.0f, 50.0f));
+	OverlapComp->SetHiddenInGame(true);
 	OverlapComp->OnComponentBeginOverlap.AddDynamic(this, &AFPSLaunchPad::OnOverlapBegin);
-	OverlapComp->AttachToComponent(PadComp, FAttachmentTransformRules::KeepRelativeTransform);
+	
+	SetRootComponent(OverlapComp);
+	PadComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PadComp"));
+	PadComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	PadComp->AttachToComponent(OverlapComp, FAttachmentTransformRules::KeepRelativeTransform);
 
-	/*DecalComp = CreateDefaultSubobject<UDecalComponent>(TEXT("DecalComp"));
-	DecalComp->DecalSize = FVector(100.0f, 100.0f, 0.1f);
-	DecalComp->AttachToComponent(PadComp, FAttachmentTransformRules::KeepRelativeTransform);
-
-	DecalComp2 = CreateDefaultSubobject<UDecalComponent>(TEXT("DecalComp2"));
-	DecalComp2->DecalSize = FVector(100.0f, 100.0f, 0.1f);
-	DecalComp2->AttachToComponent(PadComp, FAttachmentTransformRules::KeepRelativeTransform);
-	*/
-
+	LaunchPitchAngle = 35.0f;
+	LaunchStrength = 1500.0f;
 }
 
 // Called when the game starts or when spawned
@@ -58,10 +51,13 @@ void AFPSLaunchPad::Tick(float DeltaTime)
 void AFPSLaunchPad::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Overlapped"));
+	FRotator LaunchDirection = GetActorRotation();
+	LaunchDirection.Pitch += LaunchPitchAngle;
+	FVector LaunchVelocity = LaunchDirection.Vector() * LaunchStrength;
+
 	AFPSCharacter* MyPawn = Cast<AFPSCharacter>(OtherActor);
 	if (MyPawn != nullptr) 
 	{
-		FVector LaunchVelocity = { 100.f, 0.f, 1000.0f };
 		MyPawn->LaunchCharacter(LaunchVelocity, true, true);
 		PlayEffects();
 	}
@@ -70,12 +66,10 @@ void AFPSLaunchPad::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* 
 		UE_LOG(LogTemp, Warning, TEXT("Overlapped"));
 		UE_LOG(LogTemp, Warning, TEXT("OtherComp is: %s"), *OtherComp->GetName());
 		UE_LOG(LogTemp, Warning, TEXT("This is: %s"), *this->GetName());
-		if (//OtherComp->GetOwner() != this
-			//&& 
-			OtherComp->IsSimulatingPhysics())
+		if (OtherComp && OtherComp->IsSimulatingPhysics())
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Add force!"));
-			OtherComp->AddRadialForce(this->GetActorLocation(), 1000, 150000.0f, ERadialImpulseFalloff::RIF_Constant, true);			
+			OtherComp->AddImpulse(LaunchVelocity, NAME_None, true);
 			PlayEffects();
 		}		
 	}

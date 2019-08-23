@@ -27,17 +27,17 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")
 		UParticleSystem* LaunchFX;
 
-	//UPROPERTY(VisibleAnywhere, Category = "Components")
-	//	UDecalComponent* DecalComp;
-
-	//UPROPERTY(VisibleAnywhere, Category = "Components")
-	//	UDecalComponent* DecalComp2;
-
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 		UBoxComponent* OverlapComp;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 		UStaticMeshComponent* PadComp;
+
+	UPROPERTY(EditInstanceOnly, Category = "LaunchPad")
+		float LaunchPitchAngle;
+
+	UPROPERTY(EditInstanceOnly, Category = "LaunchPad")
+		float LaunchStrength;
 
 public:	
 	// Called every frame
