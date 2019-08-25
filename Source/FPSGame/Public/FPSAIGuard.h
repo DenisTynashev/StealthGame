@@ -30,6 +30,13 @@ protected:
 	UFUNCTION()
 	void OnHearNoise(APawn* Pawn, const FVector& Location, float Volume);
 
+	FRotator OriginalLocation;
+
+	UFUNCTION()
+	void ResetOrientation();
+
+	FTimerHandle TimerHandle_ResetOrientation;
+
 
 public:	
 	// Called every frame

@@ -19,6 +19,7 @@ void AFPSAIGuard::BeginPlay()
 	Super::BeginPlay();
 	PawnSensingComp->OnSeePawn.AddDynamic(this, &AFPSAIGuard::OnSeenPawn);
 	PawnSensingComp->OnHearNoise.AddDynamic(this, &AFPSAIGuard::OnHearNoise);
+	OriginalLocation = GetActorRotation();
 }
 
 void AFPSAIGuard::OnSeenPawn(APawn* SeenPawn)
@@ -33,6 +34,19 @@ void AFPSAIGuard::OnHearNoise(APawn* Pawn, const FVector& Location, float Volume
 	if (Pawn == nullptr) { return; }
 	DrawDebugSphere(GetWorld(),Location, 32.0f, 12, FColor::Red, false, 10.0f);
 	UE_LOG(LogTemp, Warning, TEXT("I have hear: %s"), *Pawn->GetName());
+	FVector Direction = Location - GetActorLocation();
+	Direction.Normalize();
+	FRotator NewLookAt = FRotationMatrix::MakeFromX(Direction).Rotator();
+	NewLookAt.Pitch = 0.0f;
+	NewLookAt.Roll = 0.0f;
+	SetActorRotation(NewLookAt);	
+	GetWorldTimerManager().ClearTimer(TimerHandle_ResetOrientation);
+	GetWorldTimerManager().SetTimer(TimerHandle_ResetOrientation, this, &AFPSAIGuard::ResetOrientation, 3.0f);
+}
+
+void AFPSAIGuard::ResetOrientation()
+{
+	SetActorRotation(OriginalLocation);
 }
 
 // Called every frame
