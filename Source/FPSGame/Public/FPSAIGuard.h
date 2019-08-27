@@ -16,6 +16,10 @@ enum class EAIState : uint8
 	Alerted
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPSGuardDelegate, EAIState, ActualGuardState);
+
+
+
 UCLASS()
 class FPSGAME_API AFPSAIGuard : public ACharacter
 {
@@ -24,6 +28,13 @@ class FPSGAME_API AFPSAIGuard : public ACharacter
 public:
 	// Sets default values for this character's properties
 	AFPSAIGuard();
+
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+	EAIState GetGuardState();
+
+	FPSGuardDelegate GuadrStateChanged;
+
 
 protected:
 	// Called when the game starts or when spawned
@@ -51,8 +62,5 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "AI")
 	void OnStateChanged(EAIState NewState);
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	
 };
