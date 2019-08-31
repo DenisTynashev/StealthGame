@@ -8,6 +8,7 @@
 #include "FPSGameMode.h"
 #include "Engine/World.h"
 #include "Engine/TargetPoint.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AFPSAIGuard::AFPSAIGuard()
@@ -68,9 +69,9 @@ void AFPSAIGuard::ResetOrientation()
 void AFPSAIGuard::SetGuardState(EAIState NewState)
 {
 	if (GuardState == NewState) { return; }
-	GuardState = NewState;
-	OnStateChanged(GuardState);
+	GuardState = NewState;	
 	GuadrStateChanged.Broadcast(GuardState);
+	OnRep_GuardState();
 }
 
 // Called every frame
@@ -85,4 +86,15 @@ EAIState AFPSAIGuard::GetGuardState()
 	return GuardState;
 }
 
+void AFPSAIGuard::OnRep_GuardState()
+{
+	OnStateChanged(GuardState);
+}
 
+
+void AFPSAIGuard::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AFPSAIGuard, GuardState);
+}

@@ -31,7 +31,11 @@ public:
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
 	EAIState GetGuardState();
+
+	UFUNCTION ()
+		void OnRep_GuardState();
 
 	FPSGuardDelegate GuadrStateChanged;
 
@@ -56,6 +60,7 @@ protected:
 
 	FTimerHandle TimerHandle_ResetOrientation;
 	
+	UPROPERTY (Replicated, ReplicatedUsing = OnRep_GuardState)
 	EAIState GuardState;
 
 	void SetGuardState(EAIState NewState);
