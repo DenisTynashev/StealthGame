@@ -6,6 +6,7 @@
 #include "UObject/ConstructorHelpers.h"
 #include "EngineUtils.h"
 #include "SpectatingViewpoint.h"
+#include "FPSGameState.h"
 
 AFPSGameMode::AFPSGameMode()
 {
@@ -15,6 +16,8 @@ AFPSGameMode::AFPSGameMode()
 
 	// use our custom HUD class
 	HUDClass = AFPSHUD::StaticClass();
+	//
+	GameStateClass = AFPSGameState::StaticClass();
 }
 
 void AFPSGameMode::CompleteMission(APawn* InstigatorPawn, bool bMissionSuccess)
@@ -31,7 +34,6 @@ void AFPSGameMode::CompleteMission(APawn* InstigatorPawn, bool bMissionSuccess)
 		в blueprint
 		присвоить ClassToFind значение искомого BP-класса
 		*/
-		InstigatorPawn->DisableInput(nullptr);
 		APlayerController* ActualPlayerController = Cast<APlayerController>(InstigatorPawn->GetController());
 		ASpectatingViewpoint* NewViewpoint = nullptr;
 		for (TActorIterator<ASpectatingViewpoint> ActorItr(GetWorld()); ActorItr; ++ActorItr)
@@ -42,13 +44,23 @@ void AFPSGameMode::CompleteMission(APawn* InstigatorPawn, bool bMissionSuccess)
 		}
 		if (NewViewpoint)
 		{
-			ActualPlayerController->SetViewTargetWithBlend(NewViewpoint, 0.05f, EViewTargetBlendFunction::VTBlend_Cubic);
+			for (FConstPlayerControllerIterator It = InstigatorPawn->GetWorld()->GetPlayerControllerIterator(); It; It++)
+			{
+				APlayerController* PC = It->Get();
+				PC->SetViewTargetWithBlend(NewViewpoint, 0.05f, EViewTargetBlendFunction::VTBlend_Cubic);
+			}			
 		}
 		else
 		{
 			//TODO Fault message to log!
 			UE_LOG(LogTemp, Warning, TEXT("No SpectatingViewpoint found!"));
 		}
+	}
+
+	AFPSGameState* GS = GetGameState<AFPSGameState>();
+	if (GS)
+	{
+		GS->MulticastOnMissionComplete(InstigatorPawn, bMissionSuccess);
 	}
 	OnMissionCompleted(InstigatorPawn, bMissionSuccess);
 }
